@@ -1,6 +1,7 @@
 package com.bvic.followmycrypto.data
 
 import com.bvic.followmycrypto.model.Crypto
+import com.bvic.followmycrypto.model.Currency
 import kotlinx.coroutines.delay
 
 private val mockCryptos = listOf(
@@ -17,13 +18,28 @@ private val mockCryptos = listOf(
 // Un faux repository : il simule un serveur lent, sans réseau
 class FakeCryptoRepository : CryptoRepository {
 
-    override suspend fun getCryptos(): List<Crypto> {
+    override suspend fun getCryptos(currency: Currency): List<Crypto> {
         delay(1_500)
-        return mockCryptos
+        val rate = if (currency == Currency.EUR) 0.92 else 1.0
+        return mockCryptos.map { crypto ->
+            crypto.copy(
+                price = crypto.price * rate,
+                highPrice = crypto.highPrice * rate,
+                lowPrice = crypto.lowPrice * rate,
+                currency = currency,
+            )
+        }
     }
 
-    override suspend fun getCrypto(symbol: String): Crypto {
+    override suspend fun getCrypto(symbol: String, currency: Currency): Crypto {
         delay(500)
-        return mockCryptos.first { it.symbol == symbol }
+        val rate = if (currency == Currency.EUR) 0.92 else 1.0
+        val crypto = mockCryptos.first { it.symbol == symbol }
+        return crypto.copy(
+            price = crypto.price * rate,
+            highPrice = crypto.highPrice * rate,
+            lowPrice = crypto.lowPrice * rate,
+            currency = currency,
+        )
     }
 }

@@ -1,9 +1,9 @@
 # Evaluations choisies
 
-1. Le plus bas et le plus haut sur 24H
+~~1. Le plus bas et le plus haut sur 24H~~
 2. Trier la liste
 3. Un convertisseur 
-4. Changer la devise
+~~4. Changer la devise~~
 5. Garder les favoris après la fermeture
 
 ## 1 - Le plus bas et le plus haut sur 24H
@@ -100,4 +100,161 @@ private val previewCryptos = listOf(
     Crypto(symbol = "BTC", name = "Bitcoin", price = 85613.50, changePercent = 0.88, highPrice = 86200.00, lowPrice = 84500.00),
     Crypto(symbol = "ETH", name = "Ethereum", price = 3214.07, changePercent = -1.42, highPrice = 3300.00, lowPrice = 3180.00),
 )
+```
+
+## 4 - Changer la devise
+### Couche Modèle
+Création d'une énumération Currency et ajout du champ currency au modèle Crypto.
+- Currency.kt :
+
+```
+enum class Currency(val code: String, val symbol: String) {
+    USD(code = "USDT", symbol = "$"),
+    EUR(code = "EUR", symbol = "€"),
+}
+```
+
+- Crypto.kt :
+
+```
+data class Crypto(
+    val symbol: String,
+    val name: String,
+    val price: Double,
+    val changePercent: Double,
+    val highPrice: Double,
+    val lowPrice: Double,
+    val currency: Currency = Currency.USD,
+)
+```
+
+### Couche Repository
+Mise à jour de l'interface CryptoRepository pour accepter la devise, et construction dynamique des paires Binance dans RemoteCryptoRepository.
+- CryptoRepository.kt :
+
+```
+interface CryptoRepository {
+    suspend fun getCryptos(currency: Currency = Currency.USD): List<Crypto>
+
+    suspend fun getCrypto(symbol: String, currency: Currency = Currency.USD): Crypto
+}
+```
+
+- RemoteCryptoRepository.kt :
+
+```
+class RemoteCryptoRepository(private val api: BinanceApi) : CryptoRepository {
+
+    override suspend fun getCryptos(currency: Currency): List<Crypto> {
+        val pairs = cryptoBaseNames.keys.map { it + currency.code }
+        val tickers = api.getTickers(pairs)
+        return tickers.map { ticker -> ticker.toCrypto(currency) }
+    }
+
+    override suspend fun getCrypto(symbol: String, currency: Currency): Crypto {
+        val tickers = api.getTickers(listOf(symbol + currency.code))
+        return tickers.first().toCrypto(currency)
+    }
+}
+```
+
+Ajustement des prix simulés selon la devise sélectionnée.
+- FakeCryptoRepository.kt :
+
+```
+override suspend fun getCryptos(currency: Currency): List<Crypto> {
+    delay(1_500)
+    val rate = if (currency == Currency.EUR) 0.92 else 1.0
+    return mockCryptos.map { crypto ->
+        crypto.copy(
+            price = crypto.price * rate,
+            highPrice = crypto.highPrice * rate,
+            lowPrice = crypto.lowPrice * rate,
+            currency = currency,
+        )
+    }
+}
+```
+
+### Couche Formateur
+Prise en compte de la devise passée en paramètre pour afficher le bon symbole ($ ou €).
+- Format.kt :
+
+```
+fun formatPrice(value: Double, currency: Currency = Currency.USD): String {
+    val decimals = when {
+        value >= 1.0 -> 2
+        value >= 0.01 -> 4
+        else -> 8
+    }
+    return "${formatNumber(value, decimals)} ${currency.symbol}"
+}
+```
+
+### Couche ViewModel
+Ajout de l'état selectedCurrency et de la méthode selectCurrency pour recharger les cours selon la devise choisie.
+- CryptoListViewModel.kt :
+
+```
+private val _selectedCurrency = MutableStateFlow(Currency.USD)
+val selectedCurrency: StateFlow<Currency> = _selectedCurrency.asStateFlow()
+
+fun selectCurrency(currency: Currency) {
+    if (_selectedCurrency.value != currency) {
+        _selectedCurrency.value = currency
+        load()
+    }
+}
+```
+
+- CryptoDetailViewModel.kt :
+
+```
+private val _selectedCurrency = MutableStateFlow(initialCurrency)
+val selectedCurrency: StateFlow<Currency> = _selectedCurrency.asStateFlow()
+
+fun selectCurrency(currency: Currency) {
+    if (_selectedCurrency.value != currency) {
+        _selectedCurrency.value = currency
+        load()
+    }
+}
+```
+
+### Couche Utilisateur
+Ajout d'un composant CurrencySelector (Chips $ / €) dans la barre supérieure TopAppBar des écrans de liste et de détail.
+- CryptoListScreen.kt :
+
+```
+@Composable
+fun CurrencySelector(
+    selectedCurrency: Currency,
+    onCurrencySelected: (Currency) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Currency.entries.forEach { currency ->
+            FilterChip(
+                selected = selectedCurrency == currency,
+                onClick = { onCurrencySelected(currency) },
+                label = { Text(currency.symbol) },
+            )
+        }
+    }
+}
+```
+
+- CryptoDetailScreen.kt :
+
+```
+actions = {
+    CurrencySelector(
+        selectedCurrency = selectedCurrency,
+        onCurrencySelected = onCurrencySelected,
+    )
+}
 ```

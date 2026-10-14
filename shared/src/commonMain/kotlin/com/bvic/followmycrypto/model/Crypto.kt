@@ -7,4 +7,5 @@ data class Crypto(
     val changePercent: Double,
     val highPrice: Double,
     val lowPrice: Double,
+    val currency: Currency = Currency.USD,
 )

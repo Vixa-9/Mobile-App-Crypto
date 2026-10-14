@@ -24,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bvic.followmycrypto.data.AppContainer
 import com.bvic.followmycrypto.model.Crypto
+import com.bvic.followmycrypto.model.Currency
 import com.bvic.followmycrypto.theme.FollowMyCryptoTheme
 import com.bvic.followmycrypto.theme.PriceDown
 import com.bvic.followmycrypto.theme.PriceUp
@@ -31,6 +32,7 @@ import com.bvic.followmycrypto.ui.components.ErrorContent
 import com.bvic.followmycrypto.ui.components.LoadingContent
 import com.bvic.followmycrypto.ui.format.formatPercent
 import com.bvic.followmycrypto.ui.format.formatPrice
+import com.bvic.followmycrypto.ui.list.CurrencySelector
 
 @Composable
 fun CryptoDetailScreen(
@@ -40,10 +42,13 @@ fun CryptoDetailScreen(
     viewModel: CryptoDetailViewModel = viewModel { CryptoDetailViewModel(symbol, AppContainer.cryptoRepository) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val selectedCurrency by viewModel.selectedCurrency.collectAsStateWithLifecycle()
 
     CryptoDetailContent(
         symbol = symbol,
         uiState = uiState,
+        selectedCurrency = selectedCurrency,
+        onCurrencySelected = viewModel::selectCurrency,
         onBack = onBack,
         onRetry = viewModel::retry,
         modifier = modifier,
@@ -54,8 +59,10 @@ fun CryptoDetailScreen(
 fun CryptoDetailContent(
     symbol: String,
     uiState: CryptoDetailUiState,
-    onBack: () -> Unit,
-    onRetry: () -> Unit,
+    selectedCurrency: Currency = Currency.USD,
+    onCurrencySelected: (Currency) -> Unit = {},
+    onBack: () -> Unit = {},
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -67,6 +74,12 @@ fun CryptoDetailContent(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
                     }
+                },
+                actions = {
+                    CurrencySelector(
+                        selectedCurrency = selectedCurrency,
+                        onCurrencySelected = onCurrencySelected,
+                    )
                 },
             )
         },
@@ -97,7 +110,7 @@ fun CryptoDetail(crypto: Crypto, modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            text = formatPrice(crypto.price),
+            text = formatPrice(crypto.price, crypto.currency),
             style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.Bold,
         )
@@ -117,7 +130,7 @@ fun CryptoDetail(crypto: Crypto, modifier: Modifier = Modifier) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = formatPrice(crypto.highPrice),
+                    text = formatPrice(crypto.highPrice, crypto.currency),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -129,7 +142,7 @@ fun CryptoDetail(crypto: Crypto, modifier: Modifier = Modifier) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = formatPrice(crypto.lowPrice),
+                    text = formatPrice(crypto.lowPrice, crypto.currency),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -152,6 +165,7 @@ fun CryptoDetailContentPreview() {
                     changePercent = 0.88,
                     highPrice = 86200.00,
                     lowPrice = 84500.00,
+                    currency = Currency.USD,
                 ),
             ),
             onBack = {},
