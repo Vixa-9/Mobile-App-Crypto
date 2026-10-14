@@ -36,12 +36,15 @@ import com.bvic.followmycrypto.theme.PriceDown
 import com.bvic.followmycrypto.theme.PriceUp
 import com.bvic.followmycrypto.ui.components.ErrorContent
 import com.bvic.followmycrypto.ui.components.LoadingContent
+import com.bvic.followmycrypto.ui.components.ThemeToggleButton
 import com.bvic.followmycrypto.ui.format.formatPercent
 import com.bvic.followmycrypto.ui.format.formatPrice
 
 @Composable
 fun CryptoListScreen(
     onCryptoClick: (String) -> Unit,
+    darkTheme: Boolean,
+    onToggleTheme: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CryptoListViewModel = viewModel { CryptoListViewModel(AppContainer.cryptoRepository) },
 ) {
@@ -54,6 +57,8 @@ fun CryptoListScreen(
         onCurrencySelected = viewModel::selectCurrency,
         onRefresh = viewModel::refresh,
         onCryptoClick = onCryptoClick,
+        darkTheme = darkTheme,
+        onToggleTheme = onToggleTheme,
         modifier = modifier,
     )
 }
@@ -66,6 +71,8 @@ fun CryptoListContent(
     onCurrencySelected: (Currency) -> Unit = {},
     onRefresh: () -> Unit = {},
     onCryptoClick: (String) -> Unit = {},
+    darkTheme: Boolean = false,
+    onToggleTheme: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -77,6 +84,10 @@ fun CryptoListContent(
                     CurrencySelector(
                         selectedCurrency = selectedCurrency,
                         onCurrencySelected = onCurrencySelected,
+                    )
+                    ThemeToggleButton(
+                        darkTheme = darkTheme,
+                        onToggle = onToggleTheme,
                     )
                     IconButton(onClick = onRefresh) {
                         Icon(Icons.Filled.Refresh, contentDescription = "Rafraîchir")
