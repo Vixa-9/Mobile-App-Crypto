@@ -38,7 +38,9 @@ private fun TickerDto.toCrypto(): Crypto {
     return Crypto(
         symbol = symbol.removeSuffix("USDT"),
         name = cryptoNames[symbol] ?: symbol,
-        price = lastPrice.toDouble(),
-        changePercent = priceChangePercent.toDouble(),
+        price = lastPrice.toDoubleOrNull() ?: 0.0,
+        changePercent = priceChangePercent.toDoubleOrNull() ?: 0.0,
+        highPrice = highPrice.toDoubleOrNull() ?: 0.0,
+        lowPrice = lowPrice.toDoubleOrNull() ?: 0.0,
     )
 }
