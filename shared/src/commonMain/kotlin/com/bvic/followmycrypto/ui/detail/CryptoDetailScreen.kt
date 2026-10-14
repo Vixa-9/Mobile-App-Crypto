@@ -30,6 +30,7 @@ import com.bvic.followmycrypto.theme.PriceDown
 import com.bvic.followmycrypto.theme.PriceUp
 import com.bvic.followmycrypto.ui.components.ErrorContent
 import com.bvic.followmycrypto.ui.components.LoadingContent
+import com.bvic.followmycrypto.ui.components.ThemeToggleButton
 import com.bvic.followmycrypto.ui.format.formatPercent
 import com.bvic.followmycrypto.ui.format.formatPrice
 import com.bvic.followmycrypto.ui.list.CurrencySelector
@@ -38,6 +39,8 @@ import com.bvic.followmycrypto.ui.list.CurrencySelector
 fun CryptoDetailScreen(
     symbol: String,
     onBack: () -> Unit,
+    darkTheme: Boolean,
+    onToggleTheme: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CryptoDetailViewModel = viewModel { CryptoDetailViewModel(symbol, AppContainer.cryptoRepository) },
 ) {
@@ -51,6 +54,8 @@ fun CryptoDetailScreen(
         onCurrencySelected = viewModel::selectCurrency,
         onBack = onBack,
         onRetry = viewModel::retry,
+        darkTheme = darkTheme,
+        onToggleTheme = onToggleTheme,
         modifier = modifier,
     )
 }
@@ -63,6 +68,8 @@ fun CryptoDetailContent(
     onCurrencySelected: (Currency) -> Unit = {},
     onBack: () -> Unit = {},
     onRetry: () -> Unit = {},
+    darkTheme: Boolean = false,
+    onToggleTheme: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -80,6 +87,7 @@ fun CryptoDetailContent(
                         selectedCurrency = selectedCurrency,
                         onCurrencySelected = onCurrencySelected,
                     )
+                    ThemeToggleButton(darkTheme = darkTheme, onToggle = onToggleTheme)
                 },
             )
         },
