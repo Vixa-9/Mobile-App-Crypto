@@ -1,9 +1,11 @@
 package com.bvic.followmycrypto.ui.detail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -75,21 +77,30 @@ fun CryptoDetailContent(
     Scaffold(
         modifier = modifier,
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(symbol, fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
-                    }
-                },
-                actions = {
+            Column {
+                CenterAlignedTopAppBar(
+                    title = { Text(symbol, fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
+                        }
+                    },
+                    actions = {
+                        ThemeToggleButton(darkTheme = darkTheme, onToggle = onToggleTheme)
+                    },
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
                     CurrencySelector(
                         selectedCurrency = selectedCurrency,
                         onCurrencySelected = onCurrencySelected,
                     )
-                    ThemeToggleButton(darkTheme = darkTheme, onToggle = onToggleTheme)
-                },
-            )
+                }
+            }
         },
     ) { innerPadding ->
         val contentModifier = Modifier.padding(innerPadding).fillMaxSize()
