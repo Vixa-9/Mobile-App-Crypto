@@ -8,6 +8,7 @@
 
 ## 1 - Le plus bas et le plus haut sur 24H
 ### Couche donées
+Ajout des champs hightPrice et lowerPrice reçus de l'API Biance sous forme de String.
 - TickerDto :
 
 ```
@@ -16,6 +17,7 @@ val lowPrice: String = "0.0",
 ```
 
 ### Couche Modèle
+Ajout des propriétés val hightPrice: Double et val lowPrice au modèle métier pur
 - Crypto.tk :
 
 ```
@@ -23,6 +25,7 @@ val highPrice: Double,
 val lowPrice: Double,
 ```
 ### Couche Repository
+Conversion des champs hightPrice et lowerPrice du TicketDto vers Double dans la fonction TickerDto.ToCrypto()
 - RemoteCryptoRepository.kt
 
 ```
@@ -37,7 +40,7 @@ private fun TickerDto.toCrypto(): Crypto {
     )
 }
 ```
-
+Mise à jour des objets fictifs mockCryptos pour inclure des valeurs réalistes de prix plus haut et plus bas.
 - FakeCryptoRepository.kt 
 
 ```
@@ -50,5 +53,51 @@ private val mockCryptos = listOf(
     Crypto(symbol = "ADA", name = "Cardano", price = 0.4521, changePercent = 2.07, highPrice = 0.4650, lowPrice = 0.4400),
     Crypto(symbol = "DOGE", name = "Dogecoin", price = 0.1284, changePercent = -3.95, highPrice = 0.1350, lowPrice = 0.1250),
     Crypto(symbol = "SHIB", name = "Shiba Inu", price = 0.00001834, changePercent = 1.12, highPrice = 0.00001900, lowPrice = 0.00001800),
+)
+```
+
+### Couche Utilisateur
+Affichage côte à côte du prix le plus haut et du prix le plus bas sur 24H juste en dessous de la variation, avec le formatage de prix formatPrice.
+
+- CryptoDetailScreen.kt
+```
+Row(
+            horizontalArrangement = Arrangement.spacedBy(24.dp),
+            modifier = Modifier.padding(top = 16.dp),
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Plus haut (24h)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = formatPrice(crypto.highPrice),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Plus bas (24h)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = formatPrice(crypto.lowPrice),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
+```
+
+Mise à jour des mocks pour les aperçus preview
+- CryptoListScreen.kt
+
+```
+private val previewCryptos = listOf(
+    Crypto(symbol = "BTC", name = "Bitcoin", price = 85613.50, changePercent = 0.88, highPrice = 86200.00, lowPrice = 84500.00),
+    Crypto(symbol = "ETH", name = "Ethereum", price = 3214.07, changePercent = -1.42, highPrice = 3300.00, lowPrice = 3180.00),
 )
 ```
