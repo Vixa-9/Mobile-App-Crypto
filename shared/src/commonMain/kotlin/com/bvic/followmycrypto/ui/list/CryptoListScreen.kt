@@ -2,6 +2,7 @@ package com.bvic.followmycrypto.ui.list
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -78,22 +79,31 @@ fun CryptoListContent(
     Scaffold(
         modifier = modifier,
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("FollowMyCrypto", fontWeight = FontWeight.Bold) },
-                actions = {
+            Column {
+                CenterAlignedTopAppBar(
+                    title = { Text("FollowMyCrypto", fontWeight = FontWeight.Bold) },
+                    actions = {
+                        ThemeToggleButton(
+                            darkTheme = darkTheme,
+                            onToggle = onToggleTheme,
+                        )
+                        IconButton(onClick = onRefresh) {
+                            Icon(Icons.Filled.Refresh, contentDescription = "Rafraîchir")
+                        }
+                    },
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
                     CurrencySelector(
                         selectedCurrency = selectedCurrency,
                         onCurrencySelected = onCurrencySelected,
                     )
-                    ThemeToggleButton(
-                        darkTheme = darkTheme,
-                        onToggle = onToggleTheme,
-                    )
-                    IconButton(onClick = onRefresh) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "Rafraîchir")
-                    }
-                },
-            )
+                }
+            }
         },
     ) { innerPadding ->
         val contentModifier = Modifier.padding(innerPadding).fillMaxSize()
