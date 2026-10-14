@@ -4,6 +4,8 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.roundToLong
 
+import com.bvic.followmycrypto.model.Currency
+
 // String.format() n'existe que sur la JVM : en commonMain, on formate à la main.
 fun formatNumber(value: Double, decimals: Int, grouping: Boolean = true): String {
     val factor = 10.0.pow(decimals).toLong()
@@ -17,13 +19,13 @@ fun formatNumber(value: Double, decimals: Int, grouping: Boolean = true): String
     return "$sign$integerPart,$decimalPart"
 }
 
-fun formatPrice(value: Double): String {
+fun formatPrice(value: Double, currency: Currency = Currency.USD): String {
     val decimals = when {
         value >= 1.0 -> 2
         value >= 0.01 -> 4
         else -> 8
     }
-    return "${formatNumber(value, decimals)} $"
+    return "${formatNumber(value, decimals)} ${currency.symbol}"
 }
 
 fun formatPercent(value: Double): String {
